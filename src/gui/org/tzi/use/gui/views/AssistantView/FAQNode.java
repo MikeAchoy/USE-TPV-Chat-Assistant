@@ -1,5 +1,6 @@
 package org.tzi.use.gui.views.AssistantView;
 
+import org.stringtemplate.v4.compiler.STParser.namedArg_return;
 
 public class FAQNode {
     // Node data fields.
@@ -11,6 +12,15 @@ public class FAQNode {
     FAQNode leftChild;
     FAQNode rightChild;
     FAQNode parent;
+
+    public FAQNode(){
+        this.question = null;
+        this.buttonText = null;
+        this.answer = null;
+        this.leftChild = null;
+        this.rightChild = null;
+        this.parent = null;
+    }
 
     public FAQNode(String question, String buttonText, String answer) {
         this.question = question;

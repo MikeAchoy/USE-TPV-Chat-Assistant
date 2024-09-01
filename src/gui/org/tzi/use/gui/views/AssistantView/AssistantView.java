@@ -1,6 +1,5 @@
 package org.tzi.use.gui.views.AssistantView;
 
-
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Graphics2D;
@@ -10,7 +9,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.print.PageFormat;
 import javax.swing.JButton;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -22,19 +20,14 @@ import org.tzi.use.gui.views.PrintableView;
 import org.tzi.use.gui.views.View;
 import org.tzi.use.uml.sys.MSystem;
 
-
 // MOSI Chat View class
 // custom view class for chat bot
-
 
 @SuppressWarnings("serial")
 public class AssistantView extends JPanel implements View, PrintableView{
 
-
-   protected final MainWindow fMainWindow;
-  
-   private final MSystem fSystem;
-
+    protected final MainWindow fMainWindow;
+    private final MSystem fSystem;
 
     // Chat GUI objects.
     private JButton chatButton;
@@ -49,11 +42,17 @@ public class AssistantView extends JPanel implements View, PrintableView{
     private JTextField textField;
     private JButton sendButton;
 
+    // FAQ binary tree objects.
     private FAQNode rootNode;
     private FAQNode currentNode;
 
+    private ChatGPTAPIConnector openAI_API;
 
     public AssistantView( MainWindow mainWindow, MSystem system, boolean loadLayout ) {
+        // Creates instance of API connection object.
+        openAI_API = new ChatGPTAPIConnector();
+        openAI_API.setAPI_KEY(mainWindow.getAPI_Key());
+
         this.setFocusable(true);
         fMainWindow = mainWindow;
         fSystem = system;
@@ -70,12 +69,13 @@ public class AssistantView extends JPanel implements View, PrintableView{
  
         chatTextArea = new JTextArea(10, 30);
         chatTextArea.setEditable(false);
+        chatTextArea.setLineWrap(true); 
+        chatTextArea.setWrapStyleWord(true);
         JScrollPane chatScrollPane = new JScrollPane(chatTextArea);
         
         // Creates FAQ text area inside ScrollPane.
         faqTextArea = new JTextArea(10, 30);
         faqTextArea.setEditable(false);
-
         faqTextArea.setLineWrap(true); 
         faqTextArea.setWrapStyleWord(true);
         JScrollPane faqScrollPane = new JScrollPane(faqTextArea);
@@ -86,13 +86,6 @@ public class AssistantView extends JPanel implements View, PrintableView{
         // Stores root node.
         this.rootNode = faqTree.getCurrentQuestion();
         this.currentNode = faqTree.getCurrentQuestion();
-
-
-
-
-
-
-
         
         // Set initial questions on Faq buttons.
         leftFAQButton = new JButton(rootNode.getLeftChild().getButtonText());
@@ -103,13 +96,6 @@ public class AssistantView extends JPanel implements View, PrintableView{
         backFAQButton.setEnabled(false);
         backFAQButton.setBorderPainted( false );
         backFAQButton.setFocusPainted( false );
- 
-
-
-
-
-
-
 
         // FAQ panel with 3 FAQ button prompts.
         JPanel faqButtonPanel = new JPanel();
@@ -121,7 +107,7 @@ public class AssistantView extends JPanel implements View, PrintableView{
         leftFAQButton.addActionListener(new LeftFAQButtonListener());
         rightFAQButton.addActionListener(new RightFAQButtonListener());
         backFAQButton.addActionListener(new BackFAQButtonListener());
- 
+
         JPanel faqPanel = new JPanel(new BorderLayout());
         faqPanel.add(faqScrollPane, BorderLayout.CENTER);
         faqPanel.add(faqButtonPanel, BorderLayout.SOUTH);
@@ -168,8 +154,13 @@ public class AssistantView extends JPanel implements View, PrintableView{
             @Override
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                    e.consume();  // Consume the Enter key event
-                    sendMessage();
+                    e.consume();  // Consume the Enter key event.
+                    // If there is an API Key in the parent window GUI, send no api key message.
+                    if(fMainWindow.getAPI_KEYStatus()){
+                        sendMessage();
+                    } else{
+                        sendNoAPIMessage();
+                    }
                 }
             }
  
@@ -182,7 +173,11 @@ public class AssistantView extends JPanel implements View, PrintableView{
         sendButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                sendMessage();
+                if(fMainWindow.getAPI_KEYStatus()){
+                    sendMessage();
+                } else{
+                    sendNoAPIMessage();
+                }
             }
         });
  
@@ -205,7 +200,7 @@ public class AssistantView extends JPanel implements View, PrintableView{
         public void actionPerformed(ActionEvent e) {
 
             // Post question and answer.
-            faqTextArea.append("User: " + currentNode.getLeftChild().getQuestion() + "\n");
+            faqTextArea.append("User: " + currentNode.getLeftChild().getQuestion() + "\n\n");
             faqTextArea.append("Assistant: " + currentNode.getLeftChild().getAnswer() + "\n\n");
 
             // Check if we can go down tree.
@@ -241,7 +236,7 @@ public class AssistantView extends JPanel implements View, PrintableView{
         @Override
         public void actionPerformed(ActionEvent e) {
             // Post question and answer.
-            faqTextArea.append("User: " + currentNode.getRightChild().getQuestion() + "\n");
+            faqTextArea.append("User: " + currentNode.getRightChild().getQuestion() + "\n\n");
             faqTextArea.append("Assistant: " + currentNode.getRightChild().getAnswer() + "\n\n");
 
             // Check if we can go down tree.
@@ -315,74 +310,86 @@ public class AssistantView extends JPanel implements View, PrintableView{
         }
     }
 
-    
-
+    // MAB -  Send and receive from API call.
     private void sendMessage() {
         String message = textField.getText();
         if (!message.trim().isEmpty()) {
             chatTextArea.append("You: " + message + "\n\n");
+
+            // Get API response and add to window.
+            String response = openAI_API.getResponse(message);
+            chatTextArea.append("Assistant: " + response + "\n\n");
+
             textField.setText("");
         }
     }
 
-       
-   public MSystem system() {
-       return fSystem;
-   }
-  
-   /**d
-    * Returns the model browser.
-    */
-   public ModelBrowser getModelBrowser() {
-       return fMainWindow.getModelBrowser();
-   }
-  
-   /**
-    * Determines if this is the selected view.
-    * @return <code>true</code> if it is the selected view, otherwise
-    * <code>false</false>
-    */
-    public boolean isSelectedView() {
-       if ( fMainWindow.getSelectedView() != null ) {
-           return fMainWindow.getSelectedView().equals( this );
-       }
-       return false;
+    private void sendNoAPIMessage() {
+        String message = textField.getText();
+        if (!message.trim().isEmpty()) {
+            chatTextArea.append("ERROR: No API key has been set.\nSet your API Key by clicking the set API key option in the help menu, and open a new assistant window.\n\n");
+            textField.setText("");
+        }
     }
 
 
-   @Override
-   public void printView(PageFormat pf) {
-       // TODO Auto-generated method stub
-       throw new UnsupportedOperationException("Unimplemented method 'printView'");
-   }
+    public MSystem system() {
+        return fSystem;
+    }
+   
+    /**d
+     * Returns the model browser.
+     */
+    public ModelBrowser getModelBrowser() {
+        return fMainWindow.getModelBrowser();
+    }
+   
+    /**
+     * Determines if this is the selected view.
+     * @return <code>true</code> if it is the selected view, otherwise
+     * <code>false</false>
+     */
+     public boolean isSelectedView() {
+        if ( fMainWindow.getSelectedView() != null ) {
+            return fMainWindow.getSelectedView().equals( this );
+        }
+        return false;
+     }
 
 
-   @Override
-   public void export(Graphics2D g) {
-       // TODO Auto-generated method stub
-       throw new UnsupportedOperationException("Unimplemented method 'export'");
-   }
+    @Override
+    public void printView(PageFormat pf) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'printView'");
+    }
 
 
-   @Override
-   public float getContentHeight() {
-       // TODO Auto-generated method stub
-       throw new UnsupportedOperationException("Unimplemented method 'getContentHeight'");
-   }
+    @Override
+    public void export(Graphics2D g) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'export'");
+    }
 
 
-   @Override
-   public float getContentWidth() {
-       // TODO Auto-generated method stub
-       throw new UnsupportedOperationException("Unimplemented method 'getContentWidth'");
-   }
+    @Override
+    public float getContentHeight() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getContentHeight'");
+    }
 
 
-   @Override
-   public void detachModel() {
-       // TODO Auto-generated method stub
-       throw new UnsupportedOperationException("Unimplemented method 'detachModel'");
-   }
-}
+    @Override
+    public float getContentWidth() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getContentWidth'");
+    }
+
+
+    @Override
+    public void detachModel() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'detachModel'");
+    }
+}   
 
 

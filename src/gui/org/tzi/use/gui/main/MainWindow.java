@@ -103,6 +103,7 @@ import org.tzi.use.gui.views.ObjectPropertiesView;
 import org.tzi.use.gui.views.PrintableView;
 import org.tzi.use.gui.views.StateEvolutionView;
 import org.tzi.use.gui.views.View;
+import org.tzi.use.gui.views.AssistantView.APIKeySetterWindow;
 import org.tzi.use.gui.views.AssistantView.AssistantView;
 import org.tzi.use.gui.views.diagrams.behavior.communicationdiagram.CommunicationDiagramView;
 import org.tzi.use.gui.views.diagrams.behavior.sequencediagram.SDScrollPane;
@@ -149,6 +150,8 @@ import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfContentByte;
 import com.itextpdf.text.pdf.PdfWriter;
 
+import jnr.ffi.Struct.blkcnt_t;
+
 /**
  * The main application window of USE.
  * 
@@ -159,6 +162,7 @@ import com.itextpdf.text.pdf.PdfWriter;
  */
 @SuppressWarnings("serial")
 public class MainWindow extends JFrame {
+
     private final Session fSession;
 
     private final StatusBar fStatusBar;
@@ -215,7 +219,25 @@ public class MainWindow extends JFrame {
     }
 
 	private static IRuntime fPluginRuntime;
- 
+
+    // MAB - API Key field on main window.
+    private String API_KEY;
+    private boolean API_KEYStatus = false;
+
+    // API Key setters and getters.
+    public void setAPI_KEY(String API_KEYtoSet){
+        this.API_KEY = API_KEYtoSet;
+        this.API_KEYStatus = true;
+    }
+
+    public String getAPI_Key(){
+        return this.API_KEY;
+    }
+
+    public boolean getAPI_KEYStatus(){
+        return this.API_KEYStatus;
+    }
+
 	private Map<Map<String, String>, PluginActionProxy> pluginActions = 
 		new HashMap<Map<String, String>, PluginActionProxy>();
 
@@ -580,9 +602,13 @@ public class MainWindow extends JFrame {
 		mi = menu.add(fActionHelpAbout);
 		mi.setMnemonic('A');
 
-        // MAB - Add Assistant submenu action to Help JMenu
+        // MAB - Add Assistant submenu action to Help menu
         mi = menu.add(fActionHelpAssistance);
         mi.setMnemonic('L');
+
+        // MAB - Add Set API Key submenu action to Help menu
+        mi = menu.add(fActionSetAPIKey);
+        mi.setMnemonic('Y');
 
         // initialize application state to current system
         sessionChanged();
@@ -1141,8 +1167,10 @@ public class MainWindow extends JFrame {
 
     private final ActionHelpAbout fActionHelpAbout = new ActionHelpAbout();
 
-    // MAB - Create instance of ActionHelpAssitance run objects here.
+    // MAB - Create instance of Menu event run objects.
     private final ActionHelpAssitance fActionHelpAssistance = new ActionHelpAssitance();
+
+    private final ActionSetAPIKey fActionSetAPIKey = new ActionSetAPIKey();
 
     /**
      * Opens and compiles a specification file.
@@ -2252,10 +2280,10 @@ public class MainWindow extends JFrame {
         }
     }
 
-    // MAB - Class definition for ActionHelpAssistant called by Chat Button.
+    // MAB - Class definition for ActionHelpAssistant called by TPV Assistant Button.
     private class ActionHelpAssitance extends AbstractAction{
         ActionHelpAssitance(){
-            super("TPV Assistant");
+            super("Chat Assistant");
         }
 
         @Override
@@ -2288,6 +2316,20 @@ public class MainWindow extends JFrame {
             // TODO Auto-generated method stub
             //throw new UnsupportedOperationException("Unimplemented method 'actionPerformed'");
         }  
+    }
+
+    // MAB - Class definition for ActionSetAPIKey called by Set API Key Button on menu.
+    private class ActionSetAPIKey extends AbstractAction{
+        ActionSetAPIKey(){
+            super("Set API Key");
+        }
+
+        @Override
+		public void actionPerformed(ActionEvent e) {
+            // 
+            APIKeySetterWindow apiKeySetterWindow = new APIKeySetterWindow(MainWindow.this);
+            apiKeySetterWindow.setVisible(true);
+        }
     }
 
     public ObjectPropertiesView showObjectPropertiesView() {
