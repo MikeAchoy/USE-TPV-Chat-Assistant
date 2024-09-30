@@ -59,8 +59,8 @@ public class AssistantView extends JPanel implements View, PrintableView{
  
         setLayout(new BorderLayout());
  
-        // Add View components here.
-        // Create a panel for the top buttons
+        // View components here:
+        // Creates a panel for the top buttons.
         JPanel buttonPanel = new JPanel();
         chatButton = new JButton("Chat");
         faqButton = new JButton("FAQ");
@@ -68,9 +68,11 @@ public class AssistantView extends JPanel implements View, PrintableView{
         buttonPanel.add(faqButton);
  
         chatTextArea = new JTextArea(10, 30);
+
         chatTextArea.setEditable(false);
         chatTextArea.setLineWrap(true); 
         chatTextArea.setWrapStyleWord(true);
+
         JScrollPane chatScrollPane = new JScrollPane(chatTextArea);
         
         // Creates FAQ text area inside ScrollPane.
@@ -94,8 +96,8 @@ public class AssistantView extends JPanel implements View, PrintableView{
 
         // Sets back button as disabled (initially).
         backFAQButton.setEnabled(false);
-        backFAQButton.setBorderPainted( false );
-        backFAQButton.setFocusPainted( false );
+        backFAQButton.setBorderPainted(false);
+        backFAQButton.setFocusPainted(false);
 
         // FAQ panel with 3 FAQ button prompts.
         JPanel faqButtonPanel = new JPanel();
@@ -112,7 +114,7 @@ public class AssistantView extends JPanel implements View, PrintableView{
         faqPanel.add(faqScrollPane, BorderLayout.CENTER);
         faqPanel.add(faqButtonPanel, BorderLayout.SOUTH);
 
-        // Card Layout for Chat and FAQ
+        // Card Layout for Chat and FAQ.
         cardPanel = new JPanel();
         cardLayout = new CardLayout();
         cardPanel.setLayout(cardLayout);
@@ -208,8 +210,8 @@ public class AssistantView extends JPanel implements View, PrintableView{
                 // The next question node is a leaf.
                 // So we disable button, can only chose different question or go back.
                 leftFAQButton.setEnabled(false);
-                leftFAQButton.setBorderPainted( false );
-                leftFAQButton.setFocusPainted( false );
+                leftFAQButton.setBorderPainted(false);
+                leftFAQButton.setFocusPainted(false);
 
             } else {
                 // Next node
@@ -221,8 +223,8 @@ public class AssistantView extends JPanel implements View, PrintableView{
                 rightFAQButton.setText(currentNode.getRightChild().getButtonText());
 
                 backFAQButton.setEnabled(true);
-                backFAQButton.setBorderPainted( true );
-                backFAQButton.setFocusPainted( true );
+                backFAQButton.setBorderPainted(true);
+                backFAQButton.setFocusPainted(true);
             }
         }
     }
@@ -244,8 +246,8 @@ public class AssistantView extends JPanel implements View, PrintableView{
                 // The next question node is a leaf.
                 // So we disable button, can only chose different question or go back.
                 rightFAQButton.setEnabled(false);
-                rightFAQButton.setBorderPainted( false );
-                rightFAQButton.setFocusPainted( false );
+                rightFAQButton.setBorderPainted(false);
+                rightFAQButton.setFocusPainted(false);
             } else {
 
                 // Next node
@@ -257,8 +259,8 @@ public class AssistantView extends JPanel implements View, PrintableView{
                 rightFAQButton.setText(currentNode.getRightChild().getButtonText());
 
                 backFAQButton.setEnabled(true);
-                backFAQButton.setBorderPainted( true );
-                backFAQButton.setFocusPainted( true );
+                backFAQButton.setBorderPainted(true);
+                backFAQButton.setFocusPainted(true);
             }
 
             // When it is appended, based on what question was selected:
@@ -280,8 +282,8 @@ public class AssistantView extends JPanel implements View, PrintableView{
             if(currentNode.equals(rootNode)){
                 // Disable back button if we can't go further back in tree.
                 backFAQButton.setEnabled(false);
-                backFAQButton.setBorderPainted( false );
-                backFAQButton.setFocusPainted( false );
+                backFAQButton.setBorderPainted(false);
+                backFAQButton.setFocusPainted(false);
 
             } else{
                 // Switch current node to the nodes parent.
@@ -292,19 +294,19 @@ public class AssistantView extends JPanel implements View, PrintableView{
                 
                 // Enable question buttons.
                 leftFAQButton.setEnabled(true);
-                leftFAQButton.setBorderPainted( true );
-                leftFAQButton.setFocusPainted( true );
+                leftFAQButton.setBorderPainted(true);
+                leftFAQButton.setFocusPainted(true);
 
                 rightFAQButton.setEnabled(true);
-                rightFAQButton.setBorderPainted( true );
-                rightFAQButton.setFocusPainted( true );
+                rightFAQButton.setBorderPainted(true);
+                rightFAQButton.setFocusPainted(true);
 
                 // Can't go back further up the tree.
                 if(currentNode.equals(rootNode)){
                     // Disable back button.
                     backFAQButton.setEnabled(false);
-                    backFAQButton.setBorderPainted( false );
-                    backFAQButton.setFocusPainted( false );
+                    backFAQButton.setBorderPainted(false);
+                    backFAQButton.setFocusPainted(false);
                 }
             }
         }
